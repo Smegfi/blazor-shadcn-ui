@@ -98,6 +98,38 @@ namespace NeoUI.Demo.Shared.Pages.Components
                 </InputGroup>
                 """;
 
+        private const string _twoWayBindingCode = """
+                <Label>Search</Label>
+                <InputGroup>
+                    <InputGroupAddon Align="InputGroupAlign.InlineStart">
+                        <LucideIcon Name="search" Size="16" />
+                    </InputGroupAddon>
+                    <InputGroupInput Placeholder="Search..." @bind-Value="_inputGroupText" />
+                </InputGroup>
+                
+                <span>Text: @_inputGroupText</span>
+                
+                @code {
+                    private string _inputGroupText = "";
+                }
+                """;
+
+        private const string _debounceCode = """
+                <Label>Search</Label>
+                <InputGroup>
+                    <InputGroupAddon Align="InputGroupAlign.InlineStart">
+                        <LucideIcon Name="search" Size="16" />
+                    </InputGroupAddon>
+                    <InputGroupInput Placeholder="Search..." @bind-Value="_debouncedInputGroupText" DebounceDelay="500" />
+                </InputGroup>
+
+                <span>Text: @_debouncedInputGroupText</span>
+
+                @code {
+                    private string _debouncedInputGroupText = "";
+                }
+                """;
+
         private const string _dropdownCode = """
                 <DropdownMenu>
                     <InputGroup>
