@@ -85,6 +85,13 @@ public partial class InputGroupTextarea : ComponentBase
     public string? Id { get; set; }
 
     /// <summary>
+    /// Gets or sets the debounce delay in milliseconds before triggering value change notifications.
+    /// Default: 0 (no debounce)
+    /// </summary>
+    [Parameter]
+    public int DebounceDelay { get; set; } = 0;
+
+    /// <summary>
     /// Gets or sets the ARIA label.
     /// </summary>
     [Parameter]
@@ -131,15 +138,54 @@ public partial class InputGroupTextarea : ComponentBase
 
     /// <summary>
     /// Handles the input event (fired on every keystroke).
+    /// Updates the value and triggers ValueChanged, with optional debouncing.
     /// </summary>
     private async Task HandleInput(ChangeEventArgs args)
     {
         var newValue = args.Value?.ToString();
-        Value = newValue;
 
-        if (ValueChanged.HasDelegate)
+        // Only trigger value update if there is an actual change
+        if (Value != newValue)
+        {
+            Value = newValue;
+        }
+
+        if (DebounceDelay > 0)
+        {
+            await DebounceAndInvokeValueChangedAsync(newValue);
+        }
+        else if (ValueChanged.HasDelegate)
         {
             await ValueChanged.InvokeAsync(newValue);
+        }
+    }
+
+    private CancellationTokenSource? _debounceCts;
+
+    /// <summary>
+    /// Handles ValueChanged with a debounce delay to prevent rapid firing.
+    /// </summary>
+    /// <param name="newValue">The new textarea value.</param>
+    private async Task DebounceAndInvokeValueChangedAsync(string? newValue)
+    {
+        // Cancel any pending debounce operation
+        _debounceCts?.Cancel();
+        _debounceCts = new CancellationTokenSource();
+        var token = _debounceCts.Token;
+
+        try
+        {
+            await Task.Delay(DebounceDelay, token);
+
+            // Only invoke if the delegate exists
+            if (ValueChanged.HasDelegate && !token.IsCancellationRequested)
+            {
+                await ValueChanged.InvokeAsync(newValue);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // Debounce window interrupted by new input; ignore this invocation.
         }
     }
 
