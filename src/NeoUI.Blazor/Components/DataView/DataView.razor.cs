@@ -40,6 +40,7 @@ public partial class DataView<TItem> : ComponentBase
     private string                     _sortColumnId    = "";
     private SortDirection              _sortDirection   = SortDirection.None;
     private Virtualize<TItem>?         _virtualizeRef;
+    private bool                       _viewSettingsOpen;
 
     // ── Parameters ──────────────────────────────────────────────────────
 
@@ -195,6 +196,19 @@ public partial class DataView<TItem> : ComponentBase
     /// <summary>Custom content rendered on the left of the toolbar (after built-in search/sort).</summary>
     [Parameter] public RenderFragment? ToolbarActions { get; set; }
 
+    /// <summary>
+    /// Filter controls shown at the left of the toolbar on desktop, and collapsed into the mobile
+    /// view-settings sheet below <c>sm</c>. Mirrors DataTable's <c>ToolbarFilters</c>. Bind these to your
+    /// own filter state — the desktop and sheet copies render the same fragment and stay in sync.
+    /// </summary>
+    [Parameter] public RenderFragment? ToolbarFilters { get; set; }
+
+    /// <summary>
+    /// Shows the sort section in the mobile view-settings sheet when any column is sortable.
+    /// Sorting stays reachable on desktop via the Sort dropdown. Default true.
+    /// </summary>
+    [Parameter] public bool ShowMobileSort { get; set; } = true;
+
     /// <summary>DataViewColumn child declarations that enable built-in search and sort.</summary>
     [Parameter] public RenderFragment? Fields { get; set; }
 
@@ -266,8 +280,10 @@ public partial class DataView<TItem> : ComponentBase
     private bool CanToggleLayout => ListTemplate is not null && GridTemplate is not null;
     private bool HasSearch       => _columns.Any(c => c.Filterable);
     private bool HasSort         => _columns.Any(c => c.Sortable);
+    /// <summary>True when the mobile view-settings sheet would have any content (filters and/or sort).</summary>
+    private bool HasViewSettings => ToolbarFilters is not null || (ShowMobileSort && HasSort);
     private bool ShowToolbarRow  => ShowToolbar &&
-        (CanToggleLayout || ToolbarActions is not null || HasSearch || HasSort);
+        (CanToggleLayout || ToolbarActions is not null || HasSearch || HasSort || ToolbarFilters is not null);
 
     // ── Template registration (sub-component API) ────────────────────────
 
@@ -351,6 +367,20 @@ public partial class DataView<TItem> : ComponentBase
     private string GetSortIconName(string colId) =>
         _sortColumnId != colId ? "arrow-up-down" :
         _sortDirection == SortDirection.Ascending ? "arrow-up" : "arrow-down";
+
+    /// <summary>Clears any active sort — backs the "No sort" chip in the mobile view-settings sheet.</summary>
+    private void ClearSort()
+    {
+        if (string.IsNullOrEmpty(_sortColumnId) && _sortDirection == SortDirection.None) return;
+        _sortColumnId  = "";
+        _sortDirection = SortDirection.None;
+        _paginationState.CurrentPage = 1;
+        _focusedIndex = -1;
+        SyncPaginationTotal();
+        if (IsServerMode && _virtualizeRef is not null)
+            InvokeAsync(_virtualizeRef.RefreshDataAsync);
+        StateHasChanged();
+    }
 
     private void SyncPaginationTotal() =>
         _paginationState.TotalItems = SortedItems.Count;

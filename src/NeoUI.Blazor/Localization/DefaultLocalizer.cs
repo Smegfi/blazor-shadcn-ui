@@ -83,6 +83,11 @@ public class DefaultLocalizer : ILocalizer
         ["DataView.ListView"] = "List view",
         ["DataView.GridView"] = "Grid view",
         ["DataView.Sort"] = "Sort",
+        ["DataView.SortBy"] = "Sort by",
+        ["DataView.SortNone"] = "No sort",
+        ["DataView.ViewSettings"] = "View settings",
+        ["DataView.Filters"] = "Filters",
+        ["DataView.Done"] = "Done",
 
         // ── DatePicker ───────────────────────────────────────────────────────
         ["DatePicker.Placeholder"] = "Pick a date",

@@ -57,17 +57,31 @@
         {
             <div class="flex items-center gap-2 mb-3">
 
-                @* Left: built-in search + sort *@
+                @* Search — full width on a phone, fixed from sm up. *@
                 @if (HasSearch)
                 {
                     <Input Value="@_searchValue"
                            ValueChanged="@((string v) => { _searchValue = v; HandleSearchInput(new ChangeEventArgs { Value = v }); })"
                            Placeholder="@Localizer["DataView.SearchPlaceholder"]"
-                           Class="h-8 w-48 text-sm" />
+                           Class="h-8 flex-1 sm:w-48 sm:flex-none text-sm" />
                 }
 
+                @* Mobile-only entry point to the view-settings sheet (sort + filters live inside it). *@
+                @if (HasViewSettings)
+                {
+                    <Button Variant="ButtonVariant.Outline"
+                            Size="ButtonSize.Icon"
+                            Class="h-8 w-8 shrink-0 sm:hidden"
+                            aria-label="@Localizer["DataView.ViewSettings"]"
+                            OnClick="@(() => _viewSettingsOpen = true)">
+                        <LucideIcon Name="sliders-horizontal" Size="16" />
+                    </Button>
+                }
+
+                @* Desktop sort dropdown — hidden on mobile (the sheet carries sort there). *@
                 @if (HasSort)
                 {
+                    <div class="hidden sm:block">
                     <DropdownMenu>
                         <DropdownMenuTrigger>
                             <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small" Class="h-8 gap-1.5">
@@ -87,9 +101,18 @@
                             }
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    </div>
                 }
 
-                @* Right: custom actions + layout toggle *@
+                @* Desktop filters — hidden on mobile; the sheet renders the same fragment there. *@
+                @if (ToolbarFilters is not null)
+                {
+                    <div class="hidden items-center gap-2 sm:flex">
+                        @ToolbarFilters
+                    </div>
+                }
+
+                @* Right: custom actions + layout toggle (stay visible at all widths). *@
                 @if (ToolbarActions is not null || CanToggleLayout)
                 {
                     <div class="ml-auto flex items-center gap-2">
@@ -119,6 +142,68 @@
                     </div>
                 }
             </div>
+
+            @* Mobile view-settings sheet — only opened by the sm:hidden trigger, so on desktop it never
+               mounts (SheetPortal defers content) and the second filter copy costs nothing. Applies live. *@
+            @if (HasViewSettings)
+            {
+                <Sheet Open="@_viewSettingsOpen" OpenChanged="@(v => _viewSettingsOpen = v)" Side="@SheetSide.Bottom">
+                    <SheetContent Side="@SheetSide.Bottom">
+                        <SheetHeader>
+                            <SheetTitle>@Localizer["DataView.ViewSettings"]</SheetTitle>
+                        </SheetHeader>
+
+                        <div class="space-y-5 py-2">
+                            @if (ToolbarFilters is not null)
+                            {
+                                <div>
+                                    <div class="mb-2 text-sm font-medium">@Localizer["DataView.Filters"]</div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        @ToolbarFilters
+                                    </div>
+                                </div>
+                            }
+
+                            @if (ShowMobileSort && HasSort)
+                            {
+                                <div>
+                                    <div class="mb-2 text-sm font-medium">@Localizer["DataView.SortBy"]</div>
+                                    @* Chips, not a Select: re-tapping the active column cycles direction (then off),
+                                       which a Select cannot express when its current value is re-picked. *@
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <Button Variant="@(string.IsNullOrEmpty(_sortColumnId) ? ButtonVariant.Secondary : ButtonVariant.Outline)"
+                                                Size="ButtonSize.Small" Class="h-8" OnClick="@ClearSort">
+                                            @Localizer["DataView.SortNone"]
+                                        </Button>
+                                        @foreach (var col in _columns.Where(c => c.Sortable))
+                                        {
+                                            var colId = col.Id;
+                                            var isActive = _sortColumnId == colId;
+                                            var ascending = isActive && _sortDirection == SortDirection.Ascending;
+                                            <Button Variant="@(isActive ? ButtonVariant.Secondary : ButtonVariant.Outline)"
+                                                    Size="ButtonSize.Small" Class="h-8"
+                                                    aria-label="@(isActive ? $"{col.Header} · {(ascending ? Localizer["DataTable.SortAscending"] : Localizer["DataTable.SortDescending"])}" : null)"
+                                                    OnClick="@(() => SetSort(colId))">
+                                                @col.Header
+                                                @if (isActive)
+                                                {
+                                                    <LucideIcon Name="@(ascending ? "arrow-up" : "arrow-down")" Size="12" />
+                                                }
+                                            </Button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <SheetFooter>
+                            <Button Class="w-full" OnClick="@(() => _viewSettingsOpen = false)">
+                                @Localizer["DataView.Done"]
+                            </Button>
+                        </SheetFooter>
+                    </SheetContent>
+                </Sheet>
+            }
         }
 
         @* ── No-results after filtering ───────────────────────────────── *@
