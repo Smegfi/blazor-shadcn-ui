@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## 2026-8-8 — Infinite Scroll Stops Refetching Once Every Item Is Loaded
 
-> **Targeting: `v4.1.5`**
+> **Targeting: `v4.1.29`**
 > **Affects `NeoUI.Blazor`.** Bug fixes + additive parameter — no breaking changes.
 
 ---
