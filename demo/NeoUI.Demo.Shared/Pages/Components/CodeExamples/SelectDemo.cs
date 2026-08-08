@@ -12,7 +12,8 @@ namespace NeoUI.Demo.Shared.Pages.Components
                 new("Presentation", "SelectPresentation",    "Popover",  "How the options are presented. Popover (default) or BottomSheet (mobile drawer)."),
                 new("SelectContent: OnLoadMore",   "EventCallback",  "\u2014",    "Invoked when the user scrolls near the bottom. Use to append additional SelectItem elements."),
                 new("SelectContent: IsLoading",    "bool",           "false",  "Shows a spinner at the bottom of the dropdown while the next batch is loading."),
-                new("SelectContent: EndOfListMessage", "string?",    "null",   "Message shown when all items have been loaded. Hidden when null or empty."),
+                new("SelectContent: EndOfListMessage", "string?",    "null",   "Message shown when all items have been loaded. Hidden when null or empty. A non-empty value also stops OnLoadMore from firing again."),
+                new("SelectContent: HasMore",      "bool",           "true",   "Set to false once every item has been loaded so scrolling back to the bottom no longer re-invokes OnLoadMore."),
             ];
 
         private const string _basicCode =
@@ -100,6 +101,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                     </SelectTrigger>
                     <SelectContent OnLoadMore="@HandleSelectLoadMore"
                                    IsLoading="@_sPagedLoading"
+                                   HasMore="@(_sPagedItems.Count < Total)"
                                    EndOfListMessage="@SelectEndMessage">
                         @foreach (var item in _sPagedItems)
                         {

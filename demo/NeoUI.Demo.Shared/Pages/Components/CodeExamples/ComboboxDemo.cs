@@ -17,7 +17,8 @@ namespace NeoUI.Demo.Shared.Pages.Components
                 new("ClearSearchOnSelect","bool",                 "false", "When true, resets the search query after a selection. Useful in one-shot picker scenarios where the combobox reopens for a fresh selection."),
                 new("OnLoadMore",        "EventCallback",         null,    "Invoked when the user scrolls near the bottom of the list. Use to load additional items."),
                 new("IsLoading",         "bool",                  "false", "Shows a spinner at the bottom of the list while the next batch is loading."),
-                new("EndOfListMessage",  "string?",               null,    "Message shown at the bottom when all items have been loaded. Hidden when null or empty."),
+                new("EndOfListMessage",  "string?",               null,    "Message shown at the bottom when all items have been loaded. Hidden when null or empty. A non-empty value also stops OnLoadMore from firing again."),
+                new("HasMore",           "bool",                  "true",  "Set to false once every item has been loaded so scrolling back to the bottom no longer re-invokes OnLoadMore."),
                 new("SearchQueryChanged","EventCallback<string>", null,    "Invoked on every search keystroke. When set, bypasses the built-in text filter — the consumer controls Items."),
                 new("Disabled",          "bool",                  "false", "When true, the combobox cannot be opened."),
                 new("MatchTriggerWidth", "bool",                  "false", "When true, the dropdown width matches the trigger width."),
@@ -110,6 +111,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                          SearchPlaceholder="Search options..."
                          OnLoadMore="@HandleLoadMore"
                          IsLoading="@_isLoading"
+                         HasMore="@(_pagedItems.Count < Total)"
                          EndOfListMessage="@_endOfListMessage"
                          PopoverWidth="w-[240px]" />
 

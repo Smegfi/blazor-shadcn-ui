@@ -44,6 +44,7 @@ public partial class MultiSelect<TItem> : ComponentBase, IAsyncDisposable
     private bool _lastIsLoading;
 
     private ElementReference _listboxScrollRef;
+    private bool _loadMorePending;
     private IJSObjectReference? _elementUtilsModule;
 
     // Cached event handlers to avoid allocations on every render
@@ -226,6 +227,25 @@ public partial class MultiSelect<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter]
     public string? EndOfListMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether more items remain to be loaded. When <c>false</c>,
+    /// <see cref="OnLoadMore"/> is never invoked, so scrolling back to the bottom of a
+    /// fully-loaded list does not trigger another pointless fetch.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>true</c>. A non-empty <see cref="EndOfListMessage"/> also implies the end
+    /// of the list has been reached and suppresses <see cref="OnLoadMore"/> on its own, so
+    /// consumers that already drive that message do not need to set this parameter.
+    /// </remarks>
+    [Parameter]
+    public bool HasMore { get; set; } = true;
+
+    /// <summary>
+    /// Whether another <see cref="OnLoadMore"/> invocation is worth attempting.
+    /// </summary>
+    private bool CanLoadMore =>
+        OnLoadMore.HasDelegate && HasMore && string.IsNullOrEmpty(EndOfListMessage);
 
     /// <summary>
     /// Gets or sets an expression that identifies the bound values.
@@ -703,7 +723,7 @@ public partial class MultiSelect<TItem> : ComponentBase, IAsyncDisposable
     /// </summary>
     private async Task HandleListboxScrollAsync()
     {
-        if (!OnLoadMore.HasDelegate || IsLoading)
+        if (!CanLoadMore || IsLoading || _loadMorePending)
         {
             return;
         }
@@ -723,7 +743,17 @@ public partial class MultiSelect<TItem> : ComponentBase, IAsyncDisposable
             var nearBottom = await _elementUtilsModule.InvokeAsync<bool>("isNearBottom", _listboxScrollRef, 80.0);
             if (nearBottom)
             {
-                await OnLoadMore.InvokeAsync();
+                // Scroll events keep arriving while the consumer's async handler runs, before it has
+                // a chance to flip IsLoading. Latch locally so one gesture yields one page fetch.
+                _loadMorePending = true;
+                try
+                {
+                    await OnLoadMore.InvokeAsync();
+                }
+                finally
+                {
+                    _loadMorePending = false;
+                }
             }
         }
         catch (Exception ex) when (ex is JSDisconnectedException or TaskCanceledException or ObjectDisposedException)

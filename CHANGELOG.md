@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-8-8 — Infinite Scroll Stops Refetching Once Every Item Is Loaded
+
+> **Targeting: `v4.1.5`**
+> **Affects `NeoUI.Blazor`.** Bug fixes + additive parameter — no breaking changes.
+
+---
+
+### 🐛 Fix — `Combobox`, `MultiSelect`, `SelectContent`: `OnLoadMore` kept firing after the whole list was loaded
+
+Once every page had been fetched, scrolling back to the top of the dropdown and down to the bottom again re-invoked `OnLoadMore`. Consumers saw the spinner flash and a redundant fetch on every return trip to the bottom, indefinitely.
+
+**Root cause:** the scroll handlers only guarded on `OnLoadMore.HasDelegate` and `IsLoading`. Nothing in the components modelled "there is nothing left to load" — `EndOfListMessage` was purely presentational, so a fully-loaded list still requested another page on every scroll-to-bottom.
+
+**Fix:** load-more is now suppressed when the list is exhausted.
+
+- New `HasMore` (`bool`, default `true`) parameter on `Combobox`, `MultiSelect`, `SelectContent`, and `CommandList`. While it is `false`, `OnLoadMore` is never invoked.
+- A non-empty `EndOfListMessage` also suppresses `OnLoadMore` on its own. That message is documented as "all items have been loaded", so existing consumers that already drive it are fixed without touching their markup.
+
+```razor
+<Combobox TItem="Option"
+          Items="@_items"
+          OnLoadMore="@LoadNextPageAsync"
+          IsLoading="@_loading"
+          HasMore="@(_items.Count < _total)"
+          EndOfListMessage="@(_items.Count >= _total ? $"All {_total} options loaded" : null)" />
+```
+
+---
+
+### 🐛 Fix — `Combobox`, `MultiSelect`, `SelectContent`: a burst of scroll events fetched several pages at once
+
+Scroll events keep arriving while the consumer's async `OnLoadMore` handler is in flight, before it has had a chance to flip `IsLoading` and re-render. Each one passed the `IsLoading` guard and requested another page, so a single flick could skip several pages ahead.
+
+**Fix:** the scroll handlers latch locally for the duration of the `OnLoadMore` invocation, so one gesture yields one page fetch regardless of how the consumer sequences its `IsLoading` updates.
+
+---
+
 ## 2026-5-18 — NumericInput ClampToRange Fix & FilterChip Vertical Alignment
 
 > **Targeting: `v4.1.4`**  

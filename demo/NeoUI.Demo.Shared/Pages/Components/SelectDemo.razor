@@ -163,6 +163,7 @@
                         </SelectTrigger>
                         <SelectContent OnLoadMore="@HandleSelectLoadMore"
                                        IsLoading="@_sPagedLoading"
+                                       HasMore="@(_sPagedItems.Count < _sTotalItems)"
                                        EndOfListMessage="@SelectEndMessage">
                             @foreach (var item in _sPagedItems)
                             {

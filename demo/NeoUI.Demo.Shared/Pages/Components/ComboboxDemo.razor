@@ -234,6 +234,7 @@
                              SearchPlaceholder="Search options..."
                              OnLoadMore="@HandleComboboxLoadMore"
                              IsLoading="@_pagedLoading"
+                             HasMore="@ComboboxHasMore"
                              EndOfListMessage="@ComboboxEndMessage"
                              SearchQueryChanged="@HandleComboboxInfiniteSearch"
                              PopoverWidth="w-[240px]" />
@@ -375,6 +376,8 @@
         _displayedItems = filtered.Take(_comboboxDisplayedCount).ToList();
         _pagedLoading = false;
     }
+
+    private bool ComboboxHasMore => _comboboxDisplayedCount < _comboboxFilteredTotal;
 
     private string? ComboboxEndMessage =>
         _comboboxDisplayedCount >= _comboboxFilteredTotal && _comboboxFilteredTotal > 0

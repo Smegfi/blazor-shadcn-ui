@@ -169,6 +169,19 @@ public partial class Combobox<TItem> : ComponentBase
     public string? EndOfListMessage { get; set; }
 
     /// <summary>
+    /// Gets or sets whether more items remain to be loaded. When <c>false</c>,
+    /// <see cref="OnLoadMore"/> is never invoked, so scrolling back to the bottom of a
+    /// fully-loaded list does not trigger another pointless fetch.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>true</c>. A non-empty <see cref="EndOfListMessage"/> also implies the end
+    /// of the list has been reached and suppresses <see cref="OnLoadMore"/> on its own, so
+    /// consumers that already drive that message do not need to set this parameter.
+    /// </remarks>
+    [Parameter]
+    public bool HasMore { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets whether the search query is cleared after a selection is made.
     /// Useful in one-shot picker scenarios where the combobox is reopened for a fresh selection.
     /// Defaults to <c>false</c> to preserve the existing persistent-search behavior.

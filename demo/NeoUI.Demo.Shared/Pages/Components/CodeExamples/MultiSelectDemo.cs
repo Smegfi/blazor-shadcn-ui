@@ -23,7 +23,8 @@ namespace NeoUI.Demo.Shared.Pages.Components
                 new("SearchQueryChanged", "EventCallback<string>", "null", "Invoked on every search keystroke. When set, bypasses the internal filter — consumer controls Items."),
                 new("OnLoadMore", "EventCallback", null, "Invoked when the user scrolls near the bottom of the list. Use to append additional items."),
                 new("IsLoading", "bool", "false", "Shows a spinner at the bottom of the list while the next batch is loading."),
-                new("EndOfListMessage", "string?", "null", "Message shown at the bottom when all items have been loaded. Hidden when null or empty."),
+                new("EndOfListMessage", "string?", "null", "Message shown at the bottom when all items have been loaded. Hidden when null or empty. A non-empty value also stops OnLoadMore from firing again."),
+                new("HasMore", "bool", "true", "Set to false once every item has been loaded so scrolling back to the bottom no longer re-invokes OnLoadMore."),
             ];
 
         private const string _basicCode = """
@@ -147,6 +148,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                              SearchPlaceholder="Search options..."
                              OnLoadMore="@HandleMsLoadMore"
                              IsLoading="@_msPagedLoading"
+                             HasMore="@(_msPagedItems.Count < Total)"
                              EndOfListMessage="@MsEndMessage"
                              PopoverWidth="w-[300px]" />
 

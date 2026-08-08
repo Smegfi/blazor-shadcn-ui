@@ -260,6 +260,7 @@
                                 SearchPlaceholder="Search options..."
                                 OnLoadMore="@HandleMsLoadMore"
                                 IsLoading="@_msPagedLoading"
+                                HasMore="@MsHasMore"
                                 EndOfListMessage="@MsEndMessage"
                                 SearchQueryChanged="@HandleMsInfiniteSearch"
                                 PopoverWidth="w-[300px]" />
@@ -474,6 +475,8 @@
         _msDisplayedItems = filtered.Take(_msDisplayedCount).ToList();
         _msPagedLoading = false;
     }
+
+    private bool MsHasMore => _msDisplayedCount < _msFilteredTotal;
 
     private string? MsEndMessage =>
         _msDisplayedCount >= _msFilteredTotal && _msFilteredTotal > 0
