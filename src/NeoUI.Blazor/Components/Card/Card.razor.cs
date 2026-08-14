@@ -71,7 +71,7 @@ public partial class Card : ComponentBase
     /// </remarks>
     private string CssClass => ClassNames.cn(
         // Base card styles (from shadcn/ui)
-        "rounded-lg border bg-card text-card-foreground shadow-sm",
+        "group/card flex flex-col gap-6 overflow-hidden rounded-lg bg-card py-6 text-sm text-card-foreground shadow-sm ring-1 ring-foreground/10 has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         // StyleVariant class overrides (layer 2 — before user Class so Class always wins)
         _styleVariant.GetClasses("Card.Root"),
         // Custom classes (if provided)

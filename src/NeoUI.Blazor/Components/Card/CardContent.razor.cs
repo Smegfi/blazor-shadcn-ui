@@ -37,7 +37,7 @@ public partial class CardContent : ComponentBase
     /// </summary>
     private string CssClass => ClassNames.cn(
         // Base content styles (from shadcn/ui)
-        "p-6 pt-0",
+        "px-6",
         // Custom classes (if provided)
         Class
     );
