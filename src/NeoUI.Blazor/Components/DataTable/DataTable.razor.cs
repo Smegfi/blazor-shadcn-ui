@@ -1232,6 +1232,10 @@ public partial class DataTable<TData> : ComponentBase, IAsyncDisposable where TD
                     : sorted.ToList();
             }
             BuildTreeRows();
+            // The expanded set outlives the children cache (see the method's remarks), so a reload that
+            // repopulates the rows has to put their children back too — otherwise every expanded row on
+            // screen silently empties.
+            await ReconcileExpandedChildrenAsync();
             return;
         }
 
@@ -1892,6 +1896,53 @@ public partial class DataTable<TData> : ComponentBase, IAsyncDisposable where TD
     {
         _treeRows = new List<TreeRow>();
         FlattenTree(_processedData, 0, _treeRows);
+    }
+
+    /// <summary>
+    /// Re-fetches children for rows that are marked expanded but hold nothing.
+    /// </summary>
+    /// <remarks>
+    /// Expansion and the children cache have separate lifetimes: the expanded set can be bound out to the
+    /// consumer (<c>@bind-ExpandedValues</c>) and survive things the cache does not — remounting on a tab
+    /// switch, a data reload, <see cref="RefreshAsync"/>. When they disagree, <see cref="FlattenTree"/>
+    /// renders the row as expanded and finds no cached children to emit, so the chevron points down over
+    /// nothing and only a collapse-and-expand fixes it. Nothing else re-fetches, because the lazy fetch
+    /// lives in the toggle handler and the row was never toggled.
+    ///
+    /// <para>Loops because a fetch can reveal deeper rows that are themselves expanded. Bounded: each pass
+    /// must fetch at least one key or it stops, so the worst case is one pass per level of nesting.</para>
+    /// </remarks>
+    private async Task ReconcileExpandedChildrenAsync()
+    {
+        if (LoadChildrenAsync is null || _expandedRowsInternal.Count == 0) return;
+
+        var fetchedAnything = false;
+        for (var pass = 0; pass < 32; pass++)
+        {
+            var missing = _treeRows
+                .Where(r => r.IsExpanded && !_fetchedChildren.ContainsKey(GetItemKey(r.Item)))
+                .Select(r => r.Item)
+                .ToList();
+            if (missing.Count == 0) break;
+
+            foreach (var item in missing)
+            {
+                var key = GetItemKey(item);
+                // Guard against a second pass retrying a key whose fetch threw: an empty list is a real
+                // answer ("no children"), and recording it stops the loop from spinning on the failure.
+                try { _fetchedChildren[key] = (await LoadChildrenAsync(item)).ToList(); }
+                catch { _fetchedChildren[key] = []; }
+            }
+
+            fetchedAnything = true;
+            BuildTreeRows();
+        }
+
+        if (fetchedAnything)
+        {
+            _treeVersion++;
+            StateHasChanged();
+        }
     }
 
     private void FlattenTree(IEnumerable<TData> items, int depth, List<TreeRow> result)
