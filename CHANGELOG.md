@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-8-17 — Revert of the `DisplayTextSelector` Write-Site Change
+
+> **Targeting: `v4.1.31` / primitives `v4.0.12`**
+> **Affects `NeoUI.Blazor.Primitives` (and `NeoUI.Blazor` by dependency).** Restores 4.1.29 behaviour.
+
+---
+
+### ⏪ Revert — `Select`: `DisplayTextSelector` is no longer authoritative at item registration
+
+`v4.1.30` / primitives `v4.0.11` made `DisplayTextSelector` the resolver every `DisplayText` write site deferred to. **Do not use those two versions** — the change did not fix the flicker it targeted, and it introduced a worse failure: for any `Select` whose selector is narrower than its item text (a `Guid`-valued one, for instance), the trigger renders the raw value where the item's text used to appear. That is a regression in every consumer, traded for a symptom with a correct consumer-side fix.
+
+**Use `DisplayTextSelector` as designed:** return **exactly the text the matching `SelectItem` supplies**. The parameter exists to pre-fill the trigger before the dropdown items mount and register; when the two strings match, the later registration write is a no-op and nothing moves. A trigger label that differs from the item's own text — a prefixed `"Status: Low"` against an item reading `"Low"`, or a `Placeholder` standing in on the first frame — guarantees a visible one-frame swap, and no component-side change can hide it.
+
+```razor
+<Select TValue="string" @bind-Value="_status"
+        DisplayTextSelector="@(v => v == "all" ? "All stock" : Label(v))">
+    <SelectTrigger Class="h-8 w-auto border-dashed text-sm"><SelectValue /></SelectTrigger>
+    <SelectContent>
+        <SelectItem TValue="string" Value="@("all")" Text="All stock">All stock</SelectItem>
+        <SelectItem TValue="string" Value="@("low")" Text="Low">Low</SelectItem>
+    </SelectContent>
+</Select>
+```
+
+---
+
 ## 2026-8-8 — Infinite Scroll Stops Refetching Once Every Item Is Loaded
 
 > **Targeting: `v4.1.29`**
