@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## 2026-8-17 — DisplayTextSelector Owns the Trigger Text at Every Write Site
 
-> **Targeting: `v4.1.30` / primitives `v4.0.10`**
+> **Targeting: `v4.1.30` / primitives `v4.0.11`**
 > **Affects `NeoUI.Blazor.Primitives` (and `NeoUI.Blazor` by dependency).** Bug fix — no breaking changes, no new parameters.
 
 ---
