@@ -24,7 +24,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                 <Carousel>
                     <CarouselItem>
                         <Card>
-                            <CardContent Class="flex h-[150px] items-center justify-center p-6">
+                            <CardContent Class="flex h-[150px] items-center justify-center">
                                 <span class="text-4xl font-semibold">1</span>
                             </CardContent>
                         </Card>
@@ -78,7 +78,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                     {
                         <CarouselItem>
                             <Card>
-                                <CardContent Class="flex flex-col items-center justify-center p-6">
+                                <CardContent Class="flex flex-col items-center justify-center">
                                     <span class="text-6xl">@image.Icon</span>
                                     <h3 class="text-xl font-semibold">@image.Title</h3>
                                 </CardContent>

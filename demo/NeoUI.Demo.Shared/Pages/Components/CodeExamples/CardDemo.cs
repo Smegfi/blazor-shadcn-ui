@@ -23,6 +23,15 @@ namespace NeoUI.Demo.Shared.Pages.Components
                         <Button Size="ButtonSize.Small">Action</Button>
                     </CardFooter>
                 </Card>
+
+                <Card>
+                    <CardContent>
+                        <p class="text-sm">This is the main content area of a card that has no header section.</p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button Size="ButtonSize.Small">Action</Button>
+                    </CardFooter>
+                </Card>
                 """;
 
         private const string _loginFormCode =
@@ -63,6 +72,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                     <CardHeader>
                         <CardTitle>Create Project</CardTitle>
                         <CardDescription>Deploy your new project in one-click.</CardDescription>
+                        <CardAction>8s ago</CardAction>
                     </CardHeader>
                     <CardContent>...</CardContent>
                     <CardFooter Class="gap-2">

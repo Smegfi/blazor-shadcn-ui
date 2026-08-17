@@ -12,7 +12,7 @@
         Title="Basic Card"
         Description="A simple card with header, content, and footer sections.">
         <DemoBlock Code="@_basicCode">
-            <div class="grid gap-4" style="max-width: 400px;">
+            <div class="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Card Title</CardTitle>
@@ -20,6 +20,15 @@
                     </CardHeader>
                     <CardContent>
                         <p class="text-sm">This is the main content area of the card.</p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button Size="ButtonSize.Small">Action</Button>
+                    </CardFooter>
+                </Card>
+
+                <Card>
+                    <CardContent>
+                        <p class="text-sm">This is the main content area of a card that has no header section.</p>
                     </CardContent>
                     <CardFooter>
                         <Button Size="ButtonSize.Small">Action</Button>
@@ -112,6 +121,7 @@
                     <CardHeader>
                         <CardTitle>Create Project</CardTitle>
                         <CardDescription>Deploy your new project in one-click.</CardDescription>
+                        <CardAction>8s ago</CardAction>
                     </CardHeader>
                     <CardContent>
                         <p class="text-sm text-muted-foreground">Your project will be created with default settings.</p>

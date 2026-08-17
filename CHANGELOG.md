@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-8-17 — `Card` Keeps Its Inset When `CardHeader` Is Omitted
+
+> **Targeting: `v4.1.32`**
+> **Affects `NeoUI.Blazor`.** Bug fix with a **breaking style change** to `CardContent` — see the migration note below.
+
+---
+
+### 🐛 Fix — `Card`: a header-less card lost its top padding
+
+`CardContent` carried `p-6 pt-0`, which assumed a `CardHeader` above it was supplying the top inset. A `Card` built from `CardContent` alone therefore rendered flush against the top edge, and a `Card` with only a `CardFooter` had the same problem.
+
+**Fix:** the vertical rhythm now lives on the `Card` root, matching shadcn/ui. The root owns `py-6` plus `gap-6` between slots; the slots contribute horizontal padding only. Spacing is now identical whichever slots are present.
+
+| Part | Before | After |
+| --- | --- | --- |
+| `Card` | `rounded-lg border bg-card text-card-foreground shadow-sm` | `flex flex-col gap-6 rounded-lg border bg-card py-6 text-card-foreground shadow-sm` |
+| `CardHeader` | `flex flex-col space-y-1.5 p-6` | `grid auto-rows-min items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-6` |
+| `CardContent` | `p-6 pt-0` | `px-6` |
+| `CardFooter` | `flex items-center p-6 pt-0` | `flex items-center px-6 [.border-t]:pt-6` |
+| `CardAction` | `flex items-center gap-2` | `flex items-center gap-2 col-start-2 row-span-2 row-start-1 self-start justify-self-end` |
+
+Every part now also emits a `data-slot` attribute (`card`, `card-header`, `card-title`, `card-description`, `card-action`, `card-content`, `card-footer`). `CardHeader` uses those attributes to switch to a two-column grid when a `CardAction` is present, so an action element sits opposite the title without extra markup.
+
+**⚠️ Migration — remove padding compensation from `CardContent`.** Vertical padding is now the root's job. Any `CardContent` that passes a padding class to work around the old `pt-0` will double up:
+
+```razor
+@* Before — compensating for CardContent's pt-0 *@
+<CardContent Class="pt-5">…</CardContent>
+<CardContent Class="flex h-[150px] items-center justify-center p-6">…</CardContent>
+
+@* After — drop the vertical padding, keep the rest *@
+<CardContent>…</CardContent>
+<CardContent Class="flex h-[150px] items-center justify-center px-6">…</CardContent>
+```
+
+`CardHeader`'s inner spacing moves from `space-y-1.5` to `grid gap-1.5`; the gap is unchanged, but children are grid items now rather than stacked blocks, so a child relying on `space-y` sibling margins may need adjusting.
+
+---
+
 ## 2026-8-17 — Revert of the `DisplayTextSelector` Write-Site Change
 
 > **Targeting: `v4.1.31` / primitives `v4.0.12`**

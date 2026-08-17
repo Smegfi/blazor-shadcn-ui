@@ -36,8 +36,8 @@ public partial class CardAction : ComponentBase
     /// Gets the computed CSS classes for the card action element.
     /// </summary>
     private string CssClass => ClassNames.cn(
-        // Base action styles
-        "flex items-center gap-2",
+        // Base action styles — grid placement within the header, flex row for own children
+        "flex items-center gap-2 col-start-2 row-span-2 row-start-1 self-start justify-self-end",
         // Custom classes (if provided)
         Class
     );

@@ -8,8 +8,9 @@ namespace NeoUI.Blazor;
 /// <remarks>
 /// <para>
 /// CardHeader provides a distinct top section for card content, typically containing
-/// a title, description, and optional action elements. It uses flexbox for layout
-/// with proper spacing between child elements.
+/// a title, description, and optional action elements. It uses a CSS grid for layout
+/// with proper spacing between child elements. When a CardAction is present the grid
+/// gains a second, auto-sized column so the action sits opposite the title.
 /// </para>
 /// </remarks>
 /// <example>
@@ -42,7 +43,7 @@ public partial class CardHeader : ComponentBase
     /// </summary>
     private string CssClass => ClassNames.cn(
         // Base header styles (from shadcn/ui)
-        "flex flex-col space-y-1.5 p-6",
+        "grid auto-rows-min items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-6",
         // Custom classes (if provided)
         Class
     );
