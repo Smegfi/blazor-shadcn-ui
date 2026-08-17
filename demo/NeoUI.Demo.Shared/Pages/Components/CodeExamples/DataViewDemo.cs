@@ -325,7 +325,7 @@ partial class DataViewDemo
                 </Fields>
                 <GridTemplate Context="p">
                     <Card Class="h-full">
-                        <CardContent Class="pt-5">
+                        <CardContent>
                             <div class="flex flex-col gap-2 h-full">
                                 <div class="h-8 w-8 rounded-md bg-muted flex items-center justify-center">
                                     <LucideIcon Name="@p.Icon" Size="16" Class="text-muted-foreground" />

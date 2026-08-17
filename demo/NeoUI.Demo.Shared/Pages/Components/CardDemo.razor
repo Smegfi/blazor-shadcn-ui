@@ -4,13 +4,15 @@
 
 <div class="space-y-8 max-w-4xl">
 
-    <DemoPageHeader Title="Card"
-                    Description="Displays structured content in a visually distinct container with sections for headers, content, and footers." />
+    <DemoPageHeader
+        Title="Card"
+        Description="Displays structured content in a visually distinct container with sections for headers, content, and footers." />
 
-    <DemoSection Title="Basic Card"
-                 Description="A simple card with header, content, and footer sections.">
+    <DemoSection
+        Title="Basic Card"
+        Description="A simple card with header, content, and footer sections.">
         <DemoBlock Code="@_basicCode">
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Card Title</CardTitle>
@@ -26,7 +28,7 @@
 
                 <Card>
                     <CardContent>
-                        <p class="text-sm">This is the main content area of the card that doesn't have a header section.</p>
+                        <p class="text-sm">This is the main content area of a card that has no header section.</p>
                     </CardContent>
                     <CardFooter>
                         <Button Size="ButtonSize.Small">Action</Button>
@@ -36,8 +38,9 @@
         </DemoBlock>
     </DemoSection>
 
-    <DemoSection Title="Login Form Example"
-                 Description="Card component used for a login form (matching shadcn/ui example).">
+    <DemoSection
+        Title="Login Form Example"
+        Description="Card component used for a login form (matching shadcn/ui example).">
         <DemoBlock Code="@_loginFormCode">
             <div class="grid gap-4" style="max-width: 400px;">
                 <Card>
@@ -50,12 +53,12 @@
                             <div class="space-y-2">
                                 <label class="text-sm font-medium" for="email">Email</label>
                                 <input id="email" type="email" placeholder="m@example.com"
-                                       class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-medium" for="password">Password</label>
                                 <input id="password" type="password"
-                                       class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
+                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
                             </div>
                         </div>
                     </CardContent>
@@ -70,8 +73,9 @@
         </DemoBlock>
     </DemoSection>
 
-    <DemoSection Title="Card Grid Layout"
-                 Description="Multiple cards in a responsive grid layout.">
+    <DemoSection
+        Title="Card Grid Layout"
+        Description="Multiple cards in a responsive grid layout.">
         <DemoBlock Code="@_gridCode">
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
@@ -108,8 +112,9 @@
         </DemoBlock>
     </DemoSection>
 
-    <DemoSection Title="Card with Action Buttons"
-                 Description="Cards with footer action buttons in different layouts.">
+    <DemoSection
+        Title="Card with Action Buttons"
+        Description="Cards with footer action buttons in different layouts.">
         <DemoBlock Code="@_actionsCode">
             <div class="grid gap-4 md:grid-cols-2">
                 <Card>
@@ -151,8 +156,9 @@
         </DemoBlock>
     </DemoSection>
 
-    <DemoSection Title="Content-Only Cards"
-                 Description="Cards without footers, suitable for displaying information.">
+    <DemoSection
+        Title="Content-Only Cards"
+        Description="Cards without footers, suitable for displaying information.">
         <DemoBlock Code="@_contentOnlyCode">
             <div class="grid gap-4 md:grid-cols-2" style="max-width: 800px;">
                 <Card>
@@ -205,8 +211,9 @@
         </DemoBlock>
     </DemoSection>
 
-    <DemoSection Title="Custom Styling"
-                 Description="Cards with custom CSS classes for extended styling.">
+    <DemoSection
+        Title="Custom Styling"
+        Description="Cards with custom CSS classes for extended styling.">
         <DemoBlock Code="@_customCode">
             <div class="grid gap-4 md:grid-cols-2" style="max-width: 800px;">
                 <Card Class="border-2 border-primary">
@@ -231,11 +238,13 @@
         </DemoBlock>
     </DemoSection>
 
-    <DemoSection Title="Accessibility"
-                 Description="Semantic HTML structure with proper heading hierarchy. Sufficient color contrast (WCAG 2.1 AA). Responsive layout and dark mode compatible via CSS variables." />
+    <DemoSection
+        Title="Accessibility"
+        Description="Semantic HTML structure with proper heading hierarchy. Sufficient color contrast (WCAG 2.1 AA). Responsive layout and dark mode compatible via CSS variables." />
 
-    <DemoSection Title="Usage"
-                 Description="Common card patterns and code examples.">
+    <DemoSection
+        Title="Usage"
+        Description="Common card patterns and code examples.">
         <div class="rounded-lg border bg-card p-4">
             <h3 class="text-sm font-medium mb-2">Basic Card Structure</h3>
             <pre class="text-xs bg-muted p-3 rounded overflow-x-auto"><code>&lt;Card&gt;

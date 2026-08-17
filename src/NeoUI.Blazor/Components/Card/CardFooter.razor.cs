@@ -38,7 +38,7 @@ public partial class CardFooter : ComponentBase
     /// </summary>
     private string CssClass => ClassNames.cn(
         // Base footer styles (from shadcn/ui)
-        "flex items-center rounded-b-xl px-6 [.border-t]:pt-6",
+        "flex items-center px-6 [.border-t]:pt-6",
         // Custom classes (if provided)
         Class
     );

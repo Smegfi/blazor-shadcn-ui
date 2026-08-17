@@ -26,7 +26,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
 
                 <Card>
                     <CardContent>
-                        <p class="text-sm">This is the main content area of the card that doesn't have header section.</p>
+                        <p class="text-sm">This is the main content area of a card that has no header section.</p>
                     </CardContent>
                     <CardFooter>
                         <Button Size="ButtonSize.Small">Action</Button>
