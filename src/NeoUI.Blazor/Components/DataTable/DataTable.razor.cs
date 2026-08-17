@@ -1216,8 +1216,20 @@ public partial class DataTable<TData> : ComponentBase, IAsyncDisposable where TD
                 if (PreprocessData != null) treeData = await PreprocessData(treeData);
                 _filteredData  = ApplyTreeFiltering(treeData).ToList();
                 var sorted     = ApplySorting(_filteredData);
+
+                // A page is N ROOT items; each root's expanded children ride along with it. Page height
+                // therefore varies with expansion, but page MEMBERSHIP never does — which is the property
+                // that matters. Paginating the flattened rows instead would strand a parent at the bottom
+                // of one page and its children at the top of the next, and re-flow every boundary below a
+                // row the moment it was expanded.
+                //
+                // Slicing before BuildTreeRows also means off-page roots are never flattened, so
+                // LoadChildrenAsync is never called for them.
                 _tableState.Pagination.TotalItems = sorted.Count();
-                _processedData = sorted.ToList();
+                _processedData = ShowPagination
+                    ? sorted.Skip(_tableState.Pagination.StartIndex)
+                            .Take(_tableState.Pagination.PageSize).ToList()
+                    : sorted.ToList();
             }
             BuildTreeRows();
             return;
@@ -2145,6 +2157,30 @@ public partial class DataTable<TData> : ComponentBase, IAsyncDisposable where TD
             _resizeInitializing = false;
             _reorderInitializing = false;
         }
+    }
+
+    /// <summary>
+    /// Re-runs the table's data pipeline: re-invokes <see cref="ServerData"/> in server mode, re-applies
+    /// filtering, sorting and paging in client mode, and rebuilds the tree.
+    /// </summary>
+    /// <param name="reloadChildren">
+    /// When true (the default), also discards the lazily-fetched children of expanded rows so
+    /// <see cref="LoadChildrenAsync"/> runs again for each. Children are fetched once per row and cached
+    /// for the lifetime of the component, so reassigning <c>Data</c> alone refreshes the PARENT rows and
+    /// leaves their children showing whatever they were first loaded with — a stale state made worse by
+    /// being half correct. Pass false only when the parents alone are known to have changed.
+    /// </param>
+    /// <remarks>
+    /// Callers need this for two situations the component cannot see: an edit committed elsewhere (a dialog
+    /// saving a child row), and a filter that lives outside the table's own toolbar. Both previously forced
+    /// consumers to remount the component via <c>@key</c>, which discarded sort, page and column state
+    /// along with the cache.
+    /// </remarks>
+    public async Task RefreshAsync(bool reloadChildren = true)
+    {
+        if (reloadChildren) _fetchedChildren.Clear();
+        await ProcessDataAsync();
+        StateHasChanged();
     }
 
     /// <summary>

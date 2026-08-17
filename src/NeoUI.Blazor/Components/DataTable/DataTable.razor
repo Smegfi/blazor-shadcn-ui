@@ -266,7 +266,10 @@
         }
         </ContextMenu>
 
-        @if (ShowPagination && !IsLoading && !IsVirtualized && !IsTreeMode && _processedData.Any())
+        @* Tree mode paginates its ROOT items (see ProcessDataAsync), so the pager belongs here too — it
+           was excluded only because tree paging did not exist. Virtualised modes still opt out: they window
+           rather than page. *@
+        @if (ShowPagination && !IsLoading && !IsVirtualized && _processedData.Any())
         {
             <Pagination @key="_stateRestoreKey"
                         State="@_tableState.Pagination"
