@@ -10,6 +10,34 @@ namespace NeoUI.Blazor;
 /// </summary>
 public static class TailwindMerge
 {
+    /// <summary>
+    /// Groups that a given group fully covers, and must therefore evict when it wins the merge.
+    /// </summary>
+    /// <remarks>
+    /// Tailwind's shorthands are supersets: <c>p-*</c> sets what <c>px-*</c>, <c>py-*</c> and the four
+    /// side utilities set, and <c>px-*</c> sets what <c>pl-*</c>/<c>pr-*</c> set. Treating them as
+    /// unrelated groups let both survive a merge, and the survivor is then decided by position in the
+    /// generated stylesheet rather than by the caller — so a later override could lose to the class it was
+    /// written to replace. Direction only runs one way: a side utility is narrower than the shorthand, so
+    /// <c>cn("p-6", "pt-0")</c> still keeps both, which is the intended Tailwind behaviour.
+    /// </remarks>
+    private static readonly Dictionary<string, string[]> SupersededGroups = new()
+    {
+        ["padding"] = ["padding-x", "padding-y", "padding-top", "padding-right", "padding-bottom", "padding-left"],
+        ["padding-x"] = ["padding-left", "padding-right"],
+        ["padding-y"] = ["padding-top", "padding-bottom"],
+
+        ["margin"] = ["margin-x", "margin-y", "margin-top", "margin-right", "margin-bottom", "margin-left"],
+        ["margin-x"] = ["margin-left", "margin-right"],
+        ["margin-y"] = ["margin-top", "margin-bottom"],
+
+        ["gap"] = ["gap-x", "gap-y"],
+
+        ["inset"] = ["inset-x", "inset-y", "top", "right", "bottom", "left"],
+        ["inset-x"] = ["left", "right"],
+        ["inset-y"] = ["top", "bottom"],
+    };
+
     private static readonly Dictionary<string, string> TailwindGroups = new()
     {
         // Padding
@@ -232,6 +260,15 @@ public static class TailwindMerge
             var group = GetUtilityGroup(className);
             if (!string.IsNullOrEmpty(group))
             {
+                // A shorthand also evicts the axis and side groups it covers: `p-0` must remove an earlier
+                // `px-6`, because it sets that property too. Without this both survive, and the winner is
+                // whichever sits later in Tailwind's stylesheet — the axis utility — so `cn("px-6", "p-0")`
+                // rendered 24px of horizontal padding and the caller's override silently did nothing.
+                if (SupersededGroups.TryGetValue(group, out var covered))
+                {
+                    foreach (var c in covered) groupedClasses.Remove(c);
+                }
+
                 // This class belongs to a known utility group
                 // Store it with its index, replacing any previous occurrence from the same group
                 groupedClasses[group] = (className, i);

@@ -53,10 +53,28 @@ public static class ClassNamesTests
             ClassNames.cn("px-4", "px-2"),
             "px-2");
 
-        // Test 9: Tailwind conflict - padding specificity
+        // Test 9: a shorthand does NOT evict narrower utilities that FOLLOW it — px-2/py-6 sit later in the
+        // stylesheet and win anyway, which is what tailwind-merge itself does. (This asserted "px-2 py-6"
+        // and had never passed: nothing invoked this harness, so it went unnoticed.)
         Test("Tailwind conflict - padding specificity",
             ClassNames.cn("p-4", "px-2", "py-6"),
-            "px-2 py-6");
+            "p-4 px-2 py-6");
+
+        // Test 9a: the reverse DOES evict — a shorthand covers the axis it follows, so an override written
+        // to replace an earlier axis utility actually replaces it.
+        Test("Tailwind conflict - shorthand supersedes axis",
+            ClassNames.cn("px-6", "p-0"),
+            "p-0");
+
+        // Test 9b: an axis covers its two sides.
+        Test("Tailwind conflict - axis supersedes sides",
+            ClassNames.cn("pl-4", "pr-4", "px-2"),
+            "px-2");
+
+        // Test 9c: a side AFTER a shorthand is a deliberate refinement and must survive.
+        Test("Tailwind conflict - side refines shorthand",
+            ClassNames.cn("p-4", "pt-0"),
+            "p-4 pt-0");
 
         // Test 10: Tailwind conflict - colors
         Test("Tailwind conflict - text color",
