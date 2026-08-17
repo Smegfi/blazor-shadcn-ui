@@ -2,10 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
-## 2026-8-17 — `Card` Keeps Its Inset When `CardHeader` Is Omitted
+## 2026-8-17 — `Card` Insets, and Tree Tables That Page
 
-> **Targeting: `v4.1.32`**
-> **Affects `NeoUI.Blazor`.** Bug fix with a **breaking style change** to `CardContent` — see the migration note below.
+> **Targeting: `v4.1.32` / primitives `v4.0.13`**
+> **Affects `NeoUI.Blazor`.** A `Card` bug fix carrying a **breaking style change** to `CardContent` (see
+> its migration note), plus tree-mode pagination and two `DataTable` fixes — those are additive.
+> `NeoUI.Blazor.Primitives` is unchanged and re-tagged only to keep the two packages in lockstep.
+
+---
+
+### ✨ Feature — `DataTable`: tree mode paginates its root items
+
+A tree table (`LoadChildrenAsync` / `ChildrenProperty`) could not page at all. The pager's render condition excluded it and the data path had no slice, so a tree rendered every row at any `InitialPageSize` — fine for a dozen, useless for a catalogue of thousands. Neither server path helped: `ItemsProvider` is mutually exclusive with the tree by definition, and `ServerData`'s tree branch sent `Page`/`PageSize` to a pager that never rendered, pinning `CurrentPage` at 1.
+
+**A page is now N ROOT items**, and each root's expanded children ride along with it. Page height varies with expansion; page *membership* never does. Paginating the flattened rows instead would strand a parent at the bottom of one page with its children at the top of the next, and re-flow every boundary below a row the moment it was expanded.
+
+Slicing happens before the tree is flattened, so off-page roots are never walked and `LoadChildrenAsync` is never called for them. This also makes the existing `ServerData` tree branch genuinely usable: the handler returns one page of roots, children stay lazy per expanded root.
+
+```razor
+<DataTable TData="Product" ServerData="@_serverData" ShowPagination="true" InitialPageSize="20"
+           HasChildrenField="@(p => p.VariantCount > 0)" LoadChildrenAsync="@LoadVariantsAsync"
+           @bind-ExpandedValues="_expanded" />
+```
+
+---
+
+### ✨ Feature — `DataTable.RefreshAsync(bool reloadChildren = true)`
+
+Consumers had no way to make the table re-run its pipeline, which they need for two things the component cannot see: an edit committed elsewhere (a dialog saving a child row), and a filter that lives outside the table's own toolbar (`DataTableRequest` carries only page, size, sort and search). The workaround was remounting via `@key`, which discarded sort, page and column state along with the children cache.
+
+`RefreshAsync` re-invokes `ServerData` (or re-filters, sorts and pages in client mode), rebuilds the tree, and by default clears the lazily-fetched children so `LoadChildrenAsync` runs again. Pass `false` when only the parents are known to have changed.
+
+---
+
+### 🐛 Fix — `DataTable`: a row marked expanded could render with no children
+
+Expansion state and the children cache have separate lifetimes. The expanded set can be bound out to the consumer (`@bind-ExpandedValues`) and survives what the cache does not — remounting on a tab switch, a data reload, `RefreshAsync`. When they disagreed, the row rendered as expanded and found nothing cached to emit: the chevron pointed down over empty space, and only a collapse-and-re-expand fixed it. Nothing re-fetched, because the lazy fetch lives in the toggle handler and the row was never toggled.
+
+Children are now reconciled after the tree is built: any expanded row holding nothing is fetched. The pass loops (a fetch can reveal deeper expanded rows) and is bounded — a pass that fetches nothing ends it — and a throwing fetch records an empty result rather than retrying forever.
 
 ---
 
