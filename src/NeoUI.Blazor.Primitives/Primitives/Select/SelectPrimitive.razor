@@ -102,6 +102,14 @@
         // Sync initial value to context
         _context.State.Value = _state.Value;
         _context.State.Disabled = Disabled;
+        // Hand the selector to the context BEFORE the initial text is computed, so every later write site
+        // (item registration, selection, sync) defers to it too. Without this the selector only decided the
+        // FIRST frame: a matching item's registration then overwrote the trigger with the item's own text,
+        // and the label visibly changed width on every mount and every pick.
+        if (DisplayTextSelector is not null)
+        {
+            _context.DisplayTextResolver = v => v is null ? null : DisplayTextSelector(v);
+        }
         // Set initial DisplayText - prioritize DisplayTextSelector if provided,
         // otherwise fall back to Value.ToString() (items will update when they register)
         _context.State.DisplayText = GetDisplayText(_state.Value);
