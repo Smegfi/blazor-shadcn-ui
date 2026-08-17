@@ -2,23 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## 2026-8-17 — DisplayTextSelector Owns the Trigger Text at Every Write Site
-
-> **Targeting: `v4.1.30` / primitives `v4.0.11`**
-> **Affects `NeoUI.Blazor.Primitives` (and `NeoUI.Blazor` by dependency).** Bug fix — no breaking changes, no new parameters.
-
----
-
-### 🐛 Fix — `Select`: the trigger label flashed the item's bare text on every mount and every pick when `DisplayTextSelector` was set
-
-A filter-chip select whose trigger reads `"Status: Low"` (via `DisplayTextSelector`) while the dropdown row reads `"Low"` visibly changed width on every render cycle that touched it — mounting the component (e.g. switching tabs on a page that hosts one chip per tab) and selecting an item both flashed the short text for a frame before the selector's text returned.
-
-**Root cause:** `DisplayTextSelector` was only consulted for the *initial* `DisplayText`. Every later write site used the item's own text — `SelectContext.RegisterItem` overwrote the trigger when a matching item registered, `SelectValue` wrote the picked item's text, and `SyncDisplayTextFromItems` re-derived from the item list. The selector decided the first frame and lost every one after it.
-
-**Fix:** `SelectPrimitive` now hands the selector to its context as `DisplayTextResolver`, and all three write sites defer to it when present. `RegisterItem` additionally skips the state write entirely when the resolved text is unchanged, so registration no longer forces a redundant re-render.
-
----
-
 ## 2026-8-8 — Infinite Scroll Stops Refetching Once Every Item Is Loaded
 
 > **Targeting: `v4.1.29`**

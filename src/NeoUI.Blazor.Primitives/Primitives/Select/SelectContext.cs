@@ -53,19 +53,6 @@ public class SelectContext<TValue> : PrimitiveContextWithEvents<SelectState<TVal
     public Action<TValue?>? OnValueChange { get; set; }
 
     /// <summary>
-    /// When set (from SelectPrimitive's DisplayTextSelector), this resolver is the single source of the
-    /// trigger's display text: item registration, selection and sync all defer to it. Without this, an
-    /// item whose value matches the selection overwrites the trigger with its OWN text on registration —
-    /// so a filter chip whose trigger reads "Status: Low" while the dropdown row reads "Low" briefly
-    /// narrows to "Low" on every mount and every pick, and the label visibly jumps width.
-    /// </summary>
-    public Func<TValue?, string?>? DisplayTextResolver { get; set; }
-
-    /// <summary>The resolver's answer when one is set; the caller's fallback text otherwise.</summary>
-    private string? ResolveDisplayText(TValue? value, string? fallback) =>
-        DisplayTextResolver is not null ? DisplayTextResolver(value) : fallback;
-
-    /// <summary>
     /// Initializes a new instance of the SelectContext.
     /// </summary>
     public SelectContext() : base(new SelectState<TValue>(), "select")
@@ -176,7 +163,7 @@ public class SelectContext<TValue> : PrimitiveContextWithEvents<SelectState<TVal
         UpdateState(state =>
         {
             state.Value = value;
-            state.DisplayText = ResolveDisplayText(value, displayText);
+            state.DisplayText = displayText;
             state.IsOpen = false; // Close after selection
             state.FocusedIndex = -1;
         });
@@ -233,7 +220,7 @@ public class SelectContext<TValue> : PrimitiveContextWithEvents<SelectState<TVal
         var item = Items.FirstOrDefault(i => EqualityComparer<TValue?>.Default.Equals(i.Value, value));
         if (item is not null)
         {
-            State.DisplayText = ResolveDisplayText(value, item.DisplayText ?? value.ToString());
+            State.DisplayText = item.DisplayText ?? value.ToString();
         }
     }
 
@@ -254,17 +241,11 @@ public class SelectContext<TValue> : PrimitiveContextWithEvents<SelectState<TVal
         };
         Items.Add(metadata);
 
-        // If this item's value matches the currently selected value, update the DisplayText to show the
-        // proper display name. The resolver wins when present, and an unchanged text is not re-written:
-        // that write is what made a DisplayTextSelector trigger flash the item's bare text for a frame on
-        // every mount (init sets "Status: Low", this line swapped in "Low", the next cycle swapped back).
+        // If this item's value matches the currently selected value,
+        // update the DisplayText to show the proper display name
         if (displayText != null && EqualityComparer<TValue>.Default.Equals(State.Value, value))
         {
-            var resolved = ResolveDisplayText(value, displayText);
-            if (!string.Equals(State.DisplayText, resolved, StringComparison.Ordinal))
-            {
-                UpdateState(state => state.DisplayText = resolved);
-            }
+            UpdateState(state => state.DisplayText = displayText);
         }
 
         return Items.Count - 1;
