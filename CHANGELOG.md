@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-8-17 — A Shorthand Utility Now Wins Its Merge
+
+> **Targeting: `v4.1.33`**
+> **Affects `NeoUI.Blazor`.** Bug fix. **Recommended for anyone on 4.1.32** — see why below.
+
+---
+
+### 🐛 Fix — `ClassNames.cn`: `p-0` did not override `px-6`
+
+`TailwindMerge` treated `p` and `px` as unrelated groups, so `cn("px-6", "p-0")` kept **both** classes and left the outcome to CSS. CSS cannot express "the later class wins" here: both selectors are specificity `0-1-0`, and Tailwind deliberately emits general utilities before specific ones (`.p-0` … `.px-6` … `.pt-0`). The axis utility therefore won, and a caller's `p-0` silently did nothing on two sides.
+
+That stylesheet ordering is correct and load-bearing — it is what makes `p-4 pt-0` work — so the resolution belongs in the merge, before the classes reach the DOM.
+
+A shorthand now evicts what it covers: `p` → `px`/`py` and the four sides, `px` → `pl`/`pr`, `py` → `pt`/`pb`, and the same for `margin`, `gap` and `inset`. **One direction only** — a side written *after* a shorthand is a deliberate refinement and still survives:
+
+```csharp
+cn("px-6", "p-0")          // "p-0"          — the override actually overrides
+cn("pl-4", "pr-4", "px-2") // "px-2"
+cn("p-4", "pt-0")          // "p-4 pt-0"     — unchanged, still refines
+```
+
+**Why this surfaced in 4.1.32.** `CardContent` moved from `p-6 pt-0` to `px-6` in that release. Consumers passing `Class="p-0"` for a full-bleed card had been relying on an accidental same-group collision with `p-6`; against `px-6` there was no collision, so those cards gained horizontal padding they had never had. Nothing about `p-0` was wrong — the merge was.
+
+---
+
 ## 2026-8-17 — `Card` Insets, and Tree Tables That Page
 
 > **Targeting: `v4.1.32` / primitives `v4.0.13`**
