@@ -123,7 +123,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                             <Presets><ListItemEnter /></Presets>
                             <ChildContent>
                                 <Card class="mb-3">
-                                    <CardContent class="pt-6"><p>@item</p></CardContent>
+                                    <CardContent><p>@item</p></CardContent>
                                 </Card>
                             </ChildContent>
                         </Motion>
@@ -141,7 +141,7 @@ namespace NeoUI.Demo.Shared.Pages.Components
                                 <Presets><GridItemEnter Duration="0.4" /></Presets>
                                 <ChildContent>
                                     <Card class="h-24 flex items-center justify-center">
-                                        <CardContent class="pt-6">
+                                        <CardContent>
                                             <span class="text-2xl font-bold">@index</span>
                                         </CardContent>
                                     </Card>
